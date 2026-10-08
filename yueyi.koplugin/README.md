@@ -8,12 +8,18 @@
 
 ## 翻译引擎
 
-插件只保留两个无需 API 密钥的在线服务：
+在本机原版（免 API 双引擎）基础上，新增 **自定义大模型 API** 与 **内置提示词** 能力，共支持三种引擎：
 
 | 引擎 | 说明 | 默认 |
 | --- | --- | --- |
 | microsoft_free（Microsoft Edge 免费） | `edge.microsoft.com/translate/translatetext`，批量 ≤12 条 / ≤4000 字节，批量失败自动降级逐条重试 | ✓ 默认 |
 | system（系统翻译） | 调用 KOReader 内置 `ui/translator`，逐段请求 | |
+| custom_api（自定义 API） | OpenAI 兼容 `/v1/chat/completions`，填入 base_url + API Key 即可使用（OpenAI / DeepSeek / 通义千问 / Kimi / 本地 Ollama 等） | |
+
+**大模型翻译特性：**
+- **内置提示词预设**：整书翻译提供多种 prompt 风格预设，可按需切换。
+- **术语表注入**：支持整份术语表智能注入（截断/汇总策略控制 prompt 膨胀）。
+- **模型思维模式适配**：自动识别 DeepSeek-R1 / V4、Qwen- Thinking、OpenAI o 系等推理模型，适配 `thinking` / `reasoning_effort` 参数，避免与推理模式冲突。
 
 目标语言归一化：`zh-Hans → zh`、`zh-Hant → zh-TW`，与 KOReader 内置翻译一致。
 
