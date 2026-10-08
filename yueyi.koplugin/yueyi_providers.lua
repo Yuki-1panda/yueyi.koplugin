@@ -1,8 +1,5 @@
 -- The small, keyless provider core used by 月译.
 local http = require("socket.http")
--- HTTPS 支持：socket.http 只能发明文 HTTP，而 Edge 免费引擎与各大模型
--- 平台的接口都是 https://，必须经 luasec 的 ssl.https 发送（KOReader 自带）。
-local ok_https, https = pcall(require, "ssl.https")
 local ltn12 = require("ltn12")
 local json = require("json")
 local logger = require("logger")
@@ -39,21 +36,11 @@ local function httpRequest(method, url, body, headers)
         headers["Content-Length"] = tostring(#body)
     end
     socketutil:set_timeout(15, 15)
-    -- 按协议分流：https 走 ssl.https，其余走 socket.http。
-    local code, resp_headers, status
-    if ok_https and tostring(url):sub(1, 8) == "https://" then
-        code, resp_headers, status = https.request{
-            url = url, method = method, headers = headers,
-            source = body and ltn12.source.string(body) or nil,
-            sink = ltn12.sink.table(response_body),
-        }
-    else
-        code, resp_headers, status = http.request{
-            url = url, method = method, headers = headers,
-            source = body and ltn12.source.string(body) or nil,
-            sink = ltn12.sink.table(response_body),
-        }
-    end
+    local code, resp_headers, status = http.request{
+        url = url, method = method, headers = headers,
+        source = body and ltn12.source.string(body) or nil,
+        sink = ltn12.sink.table(response_body),
+    }
     socketutil:reset_timeout()
     local raw = table.concat(response_body)
     local ok, data = pcall(json.decode, raw)
