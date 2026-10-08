@@ -1,7 +1,8 @@
 # 月译（双译）
 
 轻量的 KOReader 整书 / 逐章双语翻译插件，为 EPUB 建立独立的译文覆盖层，**不修改原书**。
-本项目直接基于上游 [**DualTranslate**（双译）](https://github.com/enneaa/dualtranslate.koplugin)（GPL-3.0）改造而来；DualTranslate 本身由 **KoTranslate**（v1.2.11，GPL-3.0）改造而来，移除 Kindle 专属依赖（shell/unzip/awk）、去掉辅助阅读与词典功能、改用纯 Lua 实现，可在 KOReader 支持的全平台（Kindle / Android / iOS / Linux / macOS / Windows）运行。
+
+本项目最初是**为了自己在 Kindle 上阅读外文书籍**而做的改造：在满足个人阅读需求的过程中逐步打磨出当前形态，开源发布仅供有同样需求的读者参考使用。项目直接基于上游 [**DualTranslate**（双译）](https://github.com/enneaa/dualtranslate.koplugin)（GPL-3.0）改造而来；DualTranslate 本身由 **KoTranslate**（v1.2.11，GPL-3.0）改造而来，移除 Kindle 专属依赖（shell/unzip/awk）、去掉辅助阅读与词典功能、改用纯 Lua 实现，可在 KOReader 支持的全平台（Kindle / Android / iOS / Linux / macOS / Windows）运行。
 
 > 注意：当前代码仓库与历史交付版本为**非破坏式 overlay 方案**（译文注入排版，不生成双语 EPUB 文件），与旧版 KoTranslate 的"生成双语 EPUB"行为不同。
 
