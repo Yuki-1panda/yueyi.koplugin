@@ -28,14 +28,16 @@ end
 
 -- 统一的 HTTP POST 辅助：阻塞请求 OpenAI 兼容的 chat/completions（或 Edge 端点）。
 -- 必须在任何引用它的函数（翻译、术语表抽取）之前定义，作用域覆盖整个文件。
-local function httpRequest(method, url, body, headers)
+-- timeout_secs：可选，读超时秒数，默认 15。批量合并翻译一次要生成 12 段译文，
+-- 60 秒都不一定够（GLM-4.5-Air 实测出现过 15 秒内没生成完导致的整组失败）。
+local function httpRequest(method, url, body, headers, timeout_secs)
     local response_body = {}
     headers = headers or {}
     headers["Accept"] = headers["Accept"] or "application/json"
     if body and not headers["Content-Length"] then
         headers["Content-Length"] = tostring(#body)
     end
-    socketutil:set_timeout(15, 15)
+    socketutil:set_timeout(timeout_secs or 15, timeout_secs or 15)
     local code, resp_headers, status = http.request{
         url = url, method = method, headers = headers,
         source = body and ltn12.source.string(body) or nil,
@@ -477,7 +479,10 @@ function Providers.translate_custom_api(text, source_lang, target_lang, glossary
         ["Authorization"] = "Bearer " .. api_key,
     }
 
-    local data, err = httpRequest("POST", url, body, headers)
+    local data, err = httpRequest("POST", url, body, headers, 60)
+    if not data then
+        data, err = httpRequest("POST", url, body, headers, 60)
+    end
     if not data then return nil, err end
 
     local choice = data.choices and data.choices[1]
@@ -596,7 +601,12 @@ function Providers.translate_batch_custom_api(texts, source_lang, target_lang, g
         ["Content-Type"] = "application/json",
         ["Authorization"] = "Bearer " .. api_key,
     }
-    local data, err = httpRequest("POST", url, body, headers)
+    -- 批量请求超时给足 60 秒；失败自动重试一次（网络抖动偶发超时直接吞掉，
+    -- 不再整组回退逐段）。
+    local data, err = httpRequest("POST", url, body, headers, 60)
+    if not data then
+        data, err = httpRequest("POST", url, body, headers, 60)
+    end
     if not data then return nil, err end
 
     local choice = data.choices and data.choices[1]
