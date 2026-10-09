@@ -13,11 +13,15 @@ local State = require("yueyi_state")
 local Reader = require("yueyi_reader")
 local PageTrans = require("yueyi_pagetrans")
 local InputDialog = require("ui/widget/inputdialog")
+local Updater = require("yueyi_updater")
 
 local yueyi = WidgetContainer:extend{
     name = "yueyi",
     is_doc_only = false,
 }
+
+-- 启动即清理上次 OTA 更新留下的旧版目录/临时文件（失败静默，不影响使用）。
+pcall(function() Updater.cleanupOld() end)
 
 -- 插件改名 dualtranslate -> yueyi 后，设置键前缀随之改变。把旧前缀下的
 -- 设置（API 地址 / Key / 模型 / 提示词风格 / 语言等）迁移到新前缀，
@@ -502,6 +506,10 @@ end
 
 function yueyi:buildMenuTable()
     local menu = {
+        {
+            text = _("检查更新…"),
+            callback = function() Updater.checkForUpdate() end,
+        },
         -- Master switch as a plain tap-to-toggle checkbox inside the submenu.
         {
             text = "启用插件",
